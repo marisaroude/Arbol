@@ -3,9 +3,10 @@ from cola import Cola
 
 class Arbol(object):
 
-    def __init__(self, info=None, datos=None):
+    def __init__(self, info=None,frecuencia=None, datos=None):
         self.info = info
         self.datos = datos
+        self.frecuencia = frecuencia
         self.der = None
         self.izq = None
         self._altura = 0
@@ -67,12 +68,12 @@ class Arbol(object):
             self.datos = datos
         elif(dato < self.info):
             if(self.izq is None):
-                self.izq = Arbol(dato, datos)
+                self.izq = Arbol(dato, datos = datos)
             else:
                 self.izq = self.izq.insertar_nodo(dato, datos)
         else:
             if(self.der is None):
-                self.der = Arbol(dato, datos)
+                self.der = Arbol(dato, datos =datos)
             else:
                 self.der = self.der.insertar_nodo(dato, datos)
         self = self.balancear()
@@ -87,6 +88,54 @@ class Arbol(object):
             if(self.der is not None):
                 self.der.inorden()
 
+    def añadir_descripcion(self):
+        if(self.info is not None):
+            if(self.izq is not None):
+                self.izq.añadir_descripcion()
+            print("La criatura a añadir descripcion es ",self.info)
+            breve_descripcion = input ("Ingrese una descripcion ")
+            self.datos["descripcion"] = breve_descripcion
+            if(self.der is not None):
+                self.der.añadir_descripcion()
+    
+    def añadir_captura(self):
+        if(self.info is not None):
+            if(self.izq is not None):
+                self.izq.añadir_captura()
+            print("La criatura a añadir por quien fue capturada es ",self.info)
+            capturador = input ("Ingrese por quien fue capturada ")
+            self.datos["capturada_por"] = capturador
+            if(self.der is not None):
+                self.der.añadir_captura()
+
+
+    def inorden_derrotados_heracles(self,clave = None):
+        if(self.info is not None):
+            if(self.izq is not None):
+                self.izq.inorden_derrotados_heracles()  
+            if (self.datos["derrotado_por"] == "Heracles"):  
+                print(self.info)
+            if(self.der is not None):
+                self.der.inorden_derrotados_heracles()
+
+    def inorden_no_derrotados(self,clave = None):
+        if(self.info is not None):
+            if(self.izq is not None):
+                self.izq.inorden_no_derrotados()  
+            if (self.datos["derrotado_por"] == ""):  
+                print(self.info)
+            if(self.der is not None):
+                self.der.inorden_no_derrotados()         
+
+    def inorden_capturados_heracles(self,clave = None):
+        if(self.info is not None):
+            if(self.izq is not None):
+                self.izq.inorden_capturados_heracles()  
+            if (self.datos["capturada_por"] == "Heracles"):  
+                print(self.info)
+            if(self.der is not None):
+                self.der.inorden_capturados_heracles()                 
+
     def inorden_villanos(self,clave = None):
         if(self.info is not None):
             if(self.izq is not None):
@@ -95,7 +144,6 @@ class Arbol(object):
                 print(self.info)
             if(self.der is not None):
                 self.der.inorden_villanos()
-
 
     def inorden_descendente(self):
         if(self.info is not None):
@@ -168,9 +216,9 @@ class Arbol(object):
             datos = self.datos
             if(self.izq is not None):
                 self.info = self.izq.info
+                self.datos = self.izq.datos
                 self.der = self.izq.der
                 self.izq = self.izq.izq
-                self.datos = self.izq.datos
             else:
                 self.info = None
                 self.datos = None
@@ -245,6 +293,7 @@ class Arbol(object):
                 cantidad += self.der.contar_ocurrencias(buscado)
         return cantidad
     
+
     def contar_pares_impares(self):
         pares, impares = 0, 0
         if(self.info is not None):
@@ -262,6 +311,17 @@ class Arbol(object):
                 impares += impar
         return pares, impares
 
+    def contar_heroes(self,dic):
+        if(self.info is not None):
+            if (self.datos["derrotado_por"] and self.datos["derrotado_por"] in dic):
+                dic[self.datos["derrotado_por"]] += 1
+            elif (self.datos["derrotado_por"] and self.datos["derrotado_por"] not in dic):
+                dic[self.datos["derrotado_por"]] = 1
+            if(self.izq is not None):
+                self.izq.contar_heroes(dic)
+            if(self.der is not None):
+                self.der.contar_heroes(dic)
+
     def barrido_por_nivel(self):
         pendientes = Cola()
         pendientes.arribo(self)
@@ -278,7 +338,8 @@ class Arbol(object):
         pendientes.arribo(self)
         while(not pendientes.cola_vacia()):
             nodo = pendientes.atencion()
-            print(nodo.info, nodo.frecuencia)
+            if(nodo.info):
+                print(nodo.info, nodo.frecuencia)
             if(nodo.izq is not None):
                 pendientes.arribo(nodo.izq)
             if(nodo.der is not None):
